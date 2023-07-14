@@ -6,6 +6,7 @@ require("dotenv").config();
 const ACCESS_TOKEN=process.env.ACCESS_TOKEN;
 const END_POINT=process.env.END_POINT;
 const request=require("request");
+const ApiFeatures=require("../utils/apifeatures");
 
 exports.createQuestion=catchAsyncErrors(async (req,res)=>{
     let question={
@@ -53,6 +54,21 @@ exports.createQuestion=catchAsyncErrors(async (req,res)=>{
         }
     });
 
+})
+
+exports.getAllQuestions=catchAsyncErrors(async (req,res,next)=>{
+    const questionsCount=await Question.countDocuments();
+    const questionPerPage=req.query.limit||5;
+    const apiFeature=new ApiFeatures(Question.find(), req.query).pagination(questionsCount);
+    const questions=await apiFeature.query;
+    const filteredQuestions=questions.length;
+    res.status(200).json({
+        success:true,
+        questions,
+        questionsCount,
+        questionPerPage,
+        filteredQuestions
+    })
 })
 
 exports.editQuestion=catchAsyncErrors(async (req,res,next)=>{
